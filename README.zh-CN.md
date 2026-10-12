@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-**一句话：** 在完全相同的 ×4 训练预算下复现 MambaIR（ECCV 2024）与 MaIR（CVPR 2025），证明 MambaIR 四个扫描方向里有三个几乎不携带信息，再把 MaIR 在改进过程中丢掉的局部算子补回来——一个叫 **CSBlock** 的 CNN-SSM 融合模块，换来 +0.27 dB，增益集中在规则纹理上，代价是 +126% 参数量。
+**一句话：** 在完全相同的 ×4 训练预算下复现 MambaIR（ECCV 2024）与 MaIR（CVPR 2025），证明 MambaIR 四个扫描方向里有三个几乎不携带信息，再把 MaIR 在改进过程中丢掉的局部算子补回来——一个叫 **CSBlock** 的 CNN-SSM 融合模块，换来 +0.27 dB，增益集中在规则纹理上。
 
 ## 1. 项目概述
 
