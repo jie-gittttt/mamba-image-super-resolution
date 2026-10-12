@@ -6,7 +6,7 @@
 ×4 training budget, show that three of MambaIR's four scan directions carry almost no
 information, and then put back the local operator that MaIR removed along the way — a
 CNN-SSM fusion module called **CSBlock**, worth +0.27 dB, concentrated on regular
-texture, for +126% parameters.
+texture.
 
 ## 1. Overview
 
