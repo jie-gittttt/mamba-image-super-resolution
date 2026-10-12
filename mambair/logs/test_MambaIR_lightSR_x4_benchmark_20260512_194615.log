@@ -1,0 +1,909 @@
+2026-05-12 19:46:15,191 INFO: 
+  name: MambaIR_lightSR_x4_benchmark
+  model_type: MambaIRModel
+  scale: 4
+  num_gpu: 1
+  manual_seed: 10
+  datasets:[
+    test_1:[
+      name: Set5
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/SR/Set5/HR
+      dataroot_lq: /root/autodl-tmp/datasets/SR/Set5/LR_bicubic/X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      phase: test
+      scale: 4
+    ]
+    test_2:[
+      name: Set14
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/SR/Set14/HR
+      dataroot_lq: /root/autodl-tmp/datasets/SR/Set14/LR_bicubic/X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      phase: test
+      scale: 4
+    ]
+    test_3:[
+      name: B100
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/SR/B100/HR
+      dataroot_lq: /root/autodl-tmp/datasets/SR/B100/LR_bicubic/X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      phase: test
+      scale: 4
+    ]
+    test_4:[
+      name: Urban100
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/SR/Urban100/HR
+      dataroot_lq: /root/autodl-tmp/datasets/SR/Urban100/LR_bicubic/X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      phase: test
+      scale: 4
+    ]
+  ]
+  network_g:[
+    type: MambaIR
+    upscale: 4
+    in_chans: 3
+    img_size: 64
+    img_range: 1.0
+    d_state: 10
+    depths: [6, 6, 6, 6]
+    embed_dim: 60
+    mlp_ratio: 1.2
+    upsampler: pixelshuffledirect
+    resi_connection: 1conv
+  ]
+  path:[
+    pretrain_network_g: /root/MambaIR/experiments/MambaIR_lightSR_x4/models/net_g_25000.pth
+    strict_load_g: True
+    visualization: /root/MambaIR/results/MambaIR_lightSR_x4_benchmark/visualization
+    results_root: /root/MambaIR/results/MambaIR_lightSR_x4_benchmark
+    log: /root/MambaIR/results/MambaIR_lightSR_x4_benchmark
+  ]
+  val:[
+    save_img: True
+    suffix: net_g_25000
+    metrics:[
+      psnr:[
+        type: calculate_psnr
+        crop_border: 4
+        test_y_channel: True
+      ]
+      ssim:[
+        type: calculate_ssim
+        crop_border: 4
+        test_y_channel: True
+      ]
+    ]
+  ]
+  logger:[
+    use_tb_logger: False
+  ]
+  dist: False
+  rank: 0
+  world_size: 1
+  auto_resume: False
+  is_train: False
+
+2026-05-12 19:46:15,192 INFO: Dataset [PairedImageDataset] - Set5 is built.
+2026-05-12 19:46:15,192 INFO: Number of test images in Set5: 5
+2026-05-12 19:46:15,192 INFO: Dataset [PairedImageDataset] - Set14 is built.
+2026-05-12 19:46:15,192 INFO: Number of test images in Set14: 14
+2026-05-12 19:46:15,194 INFO: Dataset [PairedImageDataset] - B100 is built.
+2026-05-12 19:46:15,194 INFO: Number of test images in B100: 100
+2026-05-12 19:46:15,196 INFO: Dataset [PairedImageDataset] - Urban100 is built.
+2026-05-12 19:46:15,196 INFO: Number of test images in Urban100: 100
+2026-05-12 19:46:15,248 INFO: Network [MambaIR] is created.
+2026-05-12 19:46:15,604 INFO: Network: MambaIR, with parameters: 924,492
+2026-05-12 19:46:15,605 INFO: MambaIR(
+  (conv_first): Conv2d(3, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (patch_embed): PatchEmbed(
+    (norm): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+  )
+  (patch_unembed): PatchUnEmbed()
+  (pos_drop): Dropout(p=0.0, inplace=False)
+  (layers): ModuleList(
+    (0): ResidualGroup(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.000)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.004)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.009)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.013)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.017)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.022)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (1): ResidualGroup(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.026)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.030)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.035)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.039)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.043)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.048)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (2): ResidualGroup(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.052)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.057)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.061)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.065)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.070)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.074)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (3): ResidualGroup(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.078)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.083)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.087)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.091)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.096)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): VSSBlock(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): SS2D(
+              (in_proj): Linear(in_features=60, out_features=144, bias=False)
+              (conv2d): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+              (act): SiLU()
+              (out_norm): LayerNorm((72,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=72, out_features=60, bias=False)
+            )
+            (drop_path): DropPath(drop_prob=0.100)
+            (conv_blk): CAB(
+              (cab): Sequential(
+                (0): Conv2d(60, 30, kernel_size=(1, 1), stride=(1, 1))
+                (1): Conv2d(30, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=30)
+                (2): GELU(approximate='none')
+                (3): Conv2d(30, 60, kernel_size=(1, 1), stride=(1, 1))
+                (4): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(2, 2), dilation=(2, 2), groups=60)
+                (5): ChannelAttention(
+                  (attention): Sequential(
+                    (0): AdaptiveAvgPool2d(output_size=1)
+                    (1): Conv2d(60, 2, kernel_size=(1, 1), stride=(1, 1))
+                    (2): ReLU(inplace=True)
+                    (3): Conv2d(2, 60, kernel_size=(1, 1), stride=(1, 1))
+                    (4): Sigmoid()
+                  )
+                )
+              )
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+  )
+  (norm): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+  (conv_after_body): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (upsample): UpsampleOneStep(
+    (0): Conv2d(60, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): PixelShuffle(upscale_factor=4)
+  )
+)
+2026-05-12 19:46:15,622 INFO: Loading MambaIR model from /root/MambaIR/experiments/MambaIR_lightSR_x4/models/net_g_25000.pth, with param key: [params].
+2026-05-12 19:46:15,652 INFO: Model [MambaIRModel] is created.
+2026-05-12 19:46:15,652 INFO: Testing Set5...
+2026-05-12 19:46:16,580 INFO: Validation Set5
+	 # psnr: 29.2925	Best: 29.2925 @ MambaIR_lightSR_x4_benchmark iter
+	 # ssim: 0.8374	Best: 0.8374 @ MambaIR_lightSR_x4_benchmark iter
+
+2026-05-12 19:46:16,580 INFO: Testing Set14...
+2026-05-12 19:46:18,615 INFO: Validation Set14
+	 # psnr: 26.7255	Best: 26.7255 @ MambaIR_lightSR_x4_benchmark iter
+	 # ssim: 0.7230	Best: 0.7230 @ MambaIR_lightSR_x4_benchmark iter
+
+2026-05-12 19:46:18,615 INFO: Testing B100...
+2026-05-12 19:46:28,733 INFO: Validation B100
+	 # psnr: 26.2988	Best: 26.2988 @ MambaIR_lightSR_x4_benchmark iter
+	 # ssim: 0.6793	Best: 0.6793 @ MambaIR_lightSR_x4_benchmark iter
+
+2026-05-12 19:46:28,733 INFO: Testing Urban100...
+2026-05-12 19:47:03,356 INFO: Validation Urban100
+	 # psnr: 23.7368	Best: 23.7368 @ MambaIR_lightSR_x4_benchmark iter
+	 # ssim: 0.6890	Best: 0.6890 @ MambaIR_lightSR_x4_benchmark iter
+

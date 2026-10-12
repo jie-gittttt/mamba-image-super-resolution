@@ -1,0 +1,23 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ---------- 训练产物 ----------
+# 本仓库只收最终日志与指标；checkpoint、TensorBoard event 与中间图不入库
+experiments/
+tb_logger/
+*.pth
+*.state
+events.out.tfevents.*
+
+# ---------- 编辑器 / 系统 ----------
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,76 @@
+name: test_MaIR_MSS_lightSR_x4
+model_type: MambaIRModel
+scale: 4
+num_gpu: 1
+manual_seed: 10
+
+datasets:
+  test_1:
+    name: Set5
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/SR/Set5/image_SRF_4/HR
+    dataroot_lq: /root/autodl-tmp/datasets/SR/Set5/image_SRF_4/LR
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+  test_2:
+    name: Set14
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/SR/Set14/image_SRF_4/HR
+    dataroot_lq: /root/autodl-tmp/datasets/SR/Set14/image_SRF_4/LR
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+  test_3:
+    name: B100
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/SR/B100/BSD100/image_SRF_4/HR
+    dataroot_lq: /root/autodl-tmp/datasets/SR/B100/BSD100/image_SRF_4/LR
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+  test_4:
+    name: Urban100
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/SR/Urban100/image_SRF_4/HR
+    dataroot_lq: /root/autodl-tmp/datasets/SR/Urban100/image_SRF_4/LR
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+network_g:
+  type: MaIR
+  upscale: 4
+  in_chans: 3
+  img_range: 1.0
+  d_state: 16
+  depths: [6, 6, 6, 6]
+  embed_dim: 60
+  ssm_ratio: 1.4
+  mlp_ratio: 1.6
+  upsampler: pixelshuffledirect
+  resi_connection: 1conv
+  img_size: 64
+  dynamic_ids: False
+  batch_size: 16
+  scan_len: 4
+
+path:
+  pretrain_network_g: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_MSS_lightSR_x4/models/net_g_25000.pth
+  strict_load_g: true
+
+val:
+  save_img: false
+  suffix: ~
+  metrics:
+    psnr:
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: true
+    ssim:
+      type: calculate_ssim
+      crop_border: 4
+      test_y_channel: true

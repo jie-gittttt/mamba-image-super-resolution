@@ -1,0 +1,806 @@
+2026-06-15 14:09:00,033 INFO: 
+                ____                _       _____  ____
+               / __ ) ____ _ _____ (_)_____/ ___/ / __ \
+              / __  |/ __ `// ___// // ___/\__ \ / /_/ /
+             / /_/ // /_/ /(__  )/ // /__ ___/ // _, _/
+            /_____/ \__,_//____//_/ \___//____//_/ |_|
+     ______                   __   __                 __      __
+    / ____/____   ____   ____/ /  / /   __  __ _____ / /__   / /
+   / / __ / __ \ / __ \ / __  /  / /   / / / // ___// //_/  / /
+  / /_/ // /_/ // /_/ // /_/ /  / /___/ /_/ // /__ / /<    /_/
+  \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
+    
+Version Information: 
+	BasicSR: 1.2.0+0051603
+	PyTorch: 2.4.0+cu121
+	TorchVision: 0.19.0+cu121
+2026-06-15 14:09:00,033 INFO: 
+  name: train_MaIR_S_lightSR_x4
+  model_type: MambaIRModel
+  scale: 4
+  num_gpu: 1
+  manual_seed: 10
+  datasets:[
+    train:[
+      task: SR
+      name: DIV2K
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/DIV2K/DIV2K_train_HR
+      dataroot_lq: /root/autodl-tmp/datasets/DIV2K/DIV2K_train_LR_bicubic_X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      gt_size: 128
+      use_hflip: False
+      use_rot: False
+      use_shuffle: True
+      num_worker_per_gpu: 12
+      batch_size_per_gpu: 96
+      dataset_enlarge_ratio: 100
+      prefetch_mode: None
+      phase: train
+      scale: 4
+    ]
+    val:[
+      name: DIV2K_val
+      type: PairedImageDataset
+      dataroot_gt: /root/autodl-tmp/datasets/DIV2K/DIV2K_valid_HR
+      dataroot_lq: /root/autodl-tmp/datasets/DIV2K/DIV2K_valid_LR_bicubic_X4
+      filename_tmpl: {}x4
+      io_backend:[
+        type: disk
+      ]
+      phase: val
+      scale: 4
+    ]
+  ]
+  network_g:[
+    type: MaIR
+    upscale: 4
+    in_chans: 3
+    img_range: 1.0
+    d_state: 16
+    depths: [6, 6, 6, 6]
+    embed_dim: 60
+    ssm_ratio: 1.4
+    mlp_ratio: 1.6
+    upsampler: pixelshuffledirect
+    resi_connection: 1conv
+    img_size: 64
+    dynamic_ids: False
+    batch_size: 96
+    scan_len: 4
+  ]
+  path:[
+    pretrain_network_g: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/models/net_g_22500.pth
+    strict_load_g: False
+    resume_state: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/training_states/22500.state
+    experiments_root: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4
+    models: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/models
+    training_states: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/training_states
+    log: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4
+    visualization: /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/visualization
+  ]
+  train:[
+    optim_g:[
+      type: Adam
+      lr: 0.0002
+      weight_decay: 0
+      betas: [0.9, 0.99]
+    ]
+    scheduler:[
+      type: MultiStepLR
+      milestones: [12500, 20000, 22500, 23750]
+      gamma: 0.5
+    ]
+    total_iter: 25000
+    warmup_iter: -1
+    pixel_opt:[
+      type: L1Loss
+      loss_weight: 1.0
+      reduction: mean
+    ]
+  ]
+  val:[
+    val_freq: 2500.0
+    save_img: False
+    metrics:[
+      psnr:[
+        type: calculate_psnr
+        crop_border: 4
+        test_y_channel: True
+      ]
+    ]
+  ]
+  logger:[
+    print_freq: 200
+    save_checkpoint_freq: 2500.0
+    use_tb_logger: True
+    wandb:[
+      project: None
+      resume_id: None
+    ]
+  ]
+  dist_params:[
+    backend: nccl
+    port: 29500
+  ]
+  dist: False
+  rank: 0
+  world_size: 1
+  auto_resume: False
+  is_train: True
+  root_path: /root/2025-CVPR-MaIR-main
+
+2026-06-15 14:09:00,087 INFO: Dataset [PairedImageDataset] - DIV2K is built.
+2026-06-15 14:09:00,087 INFO: Training statistics:
+	Number of train images: 800
+	Dataset enlarge ratio: 100
+	Batch size per gpu: 96
+	World size (gpu number): 1
+	Require iter number per epoch: 834
+	Total epochs: 30; iters: 25000.
+2026-06-15 14:09:00,089 INFO: Dataset [PairedImageDataset] - DIV2K_val is built.
+2026-06-15 14:09:00,089 INFO: Number of val images/folders in DIV2K_val: 100
+2026-06-15 14:09:00,185 INFO: Network [MaIR] is created.
+2026-06-15 14:09:00,198 INFO: Network: MaIR, with parameters: 1,374,156
+2026-06-15 14:09:00,198 INFO: MaIR(
+  (conv_first): Conv2d(3, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (patch_embed): PatchEmbed(
+    (norm): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+  )
+  (patch_unembed): PatchUnEmbed()
+  (pos_drop): Dropout(p=0.0, inplace=False)
+  (layers): ModuleList(
+    (0): RMG(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.000)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.004)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.009)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.013)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.017)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.022)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (1): RMG(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.026)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.030)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.035)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.039)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.043)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.048)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (2): RMG(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.052)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.057)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.061)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.065)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.070)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.074)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+    (3): RMG(
+      (residual_group): BasicLayer(
+        dim=60, input_resolution=(64, 64), depth=6
+        (blocks): ModuleList(
+          (0): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.078)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (1): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.083)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (2): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.087)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (3): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.091)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (4): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.096)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+          (5): RMB(
+            (ln_1): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+            (self_attention): VMM(
+              (in_proj): Linear(in_features=60, out_features=168, bias=False)
+              (conv2d): Conv2d(84, 84, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=84)
+              (act): SiLU()
+              (out_norm): LayerNorm((84,), eps=1e-05, elementwise_affine=True)
+              (out_proj): Linear(in_features=84, out_features=60, bias=False)
+              (gating): ShuffleAttn(
+                (gating): Sequential(
+                  (0): AdaptiveAvgPool2d(output_size=1)
+                  (1): Conv2d(336, 336, kernel_size=(1, 1), stride=(1, 1), groups=84)
+                  (2): Sigmoid()
+                )
+              )
+            )
+            (drop_path): DropPath(drop_prob=0.100)
+            (conv_blk): Mlp(
+              (fc1): Linear(in_features=60, out_features=96, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=60, bias=True)
+            )
+            (ln_2): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+          )
+        )
+      )
+      (conv): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (patch_embed): PatchEmbed()
+      (patch_unembed): PatchUnEmbed()
+    )
+  )
+  (norm): LayerNorm((60,), eps=1e-05, elementwise_affine=True)
+  (conv_after_body): Conv2d(60, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (upsample): UpsampleOneStep(
+    (0): Conv2d(60, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): PixelShuffle(upscale_factor=4)
+  )
+)
+2026-06-15 14:09:00,212 INFO: Loading MaIR model from /root/2025-CVPR-MaIR-main/experiments/train_MaIR_S_lightSR_x4/models/net_g_22500.pth, with param key: [params].
+2026-06-15 14:09:00,304 INFO: Loss [L1Loss] is created.
+2026-06-15 14:09:00,305 INFO: Model [MambaIRModel] is created.
+2026-06-15 14:09:00,310 INFO: Resuming training from epoch: 27, iter: 22500.
+2026-06-15 14:09:00,407 INFO: Start training from epoch: 27, iter: 22500
+2026-06-15 14:10:18,297 INFO: [train..][epoch: 27, iter:  22,600, lr:(2.500e-05,)] [eta: 0:30:52, time (data): 0.779 (0.214)] l_pix: 2.9086e-02 
+2026-06-15 14:12:33,410 INFO: [train..][epoch: 27, iter:  22,800, lr:(2.500e-05,)] [eta: 0:25:56, time (data): 0.677 (0.125)] l_pix: 2.4256e-02 
+2026-06-15 14:14:48,908 INFO: [train..][epoch: 27, iter:  23,000, lr:(2.500e-05,)] [eta: 0:23:10, time (data): 0.673 (0.120)] l_pix: 2.6104e-02 
+2026-06-15 14:17:05,193 INFO: [train..][epoch: 27, iter:  23,200, lr:(2.500e-05,)] [eta: 0:20:44, time (data): 0.676 (0.123)] l_pix: 2.3179e-02 
+2026-06-15 14:19:27,886 INFO: [train..][epoch: 28, iter:  23,400, lr:(2.500e-05,)] [eta: 0:18:33, time (data): 0.767 (0.213)] l_pix: 2.5249e-02 
+2026-06-15 14:21:42,721 INFO: [train..][epoch: 28, iter:  23,600, lr:(2.500e-05,)] [eta: 0:16:08, time (data): 0.675 (0.122)] l_pix: 2.4554e-02 
+2026-06-15 14:23:57,535 INFO: [train..][epoch: 28, iter:  23,800, lr:(1.250e-05,)] [eta: 0:13:46, time (data): 0.669 (0.115)] l_pix: 2.2266e-02 
+2026-06-15 14:26:14,052 INFO: [train..][epoch: 28, iter:  24,000, lr:(1.250e-05,)] [eta: 0:11:28, time (data): 0.692 (0.139)] l_pix: 2.6518e-02 
+2026-06-15 14:28:36,237 INFO: [train..][epoch: 29, iter:  24,200, lr:(1.250e-05,)] [eta: 0:09:12, time (data): 0.759 (0.206)] l_pix: 2.7207e-02 
+2026-06-15 14:30:53,721 INFO: [train..][epoch: 29, iter:  24,400, lr:(1.250e-05,)] [eta: 0:06:53, time (data): 0.692 (0.139)] l_pix: 2.6286e-02 
+2026-06-15 14:33:11,573 INFO: [train..][epoch: 29, iter:  24,600, lr:(1.250e-05,)] [eta: 0:04:35, time (data): 0.690 (0.137)] l_pix: 2.6052e-02 
+2026-06-15 14:35:26,114 INFO: [train..][epoch: 29, iter:  24,800, lr:(1.250e-05,)] [eta: 0:02:17, time (data): 0.660 (0.107)] l_pix: 2.6875e-02 
+2026-06-15 14:37:50,805 INFO: [train..][epoch: 30, iter:  25,000, lr:(1.250e-05,)] [eta: 0:00:00, time (data): 0.768 (0.215)] l_pix: 2.3950e-02 
+2026-06-15 14:37:50,806 INFO: Saving models and training states.
+2026-06-15 14:41:57,100 INFO: Validation DIV2K_val
+	 # psnr: 30.0096	Best: 30.0096 @ 25000 iter
+
+2026-06-15 14:41:57,104 INFO: End of training. Time consumed: 0:32:56
+2026-06-15 14:41:57,105 INFO: Save the latest model.
+2026-06-15 14:45:57,348 INFO: Validation DIV2K_val
+	 # psnr: 30.0096	Best: 30.0096 @ 25001 iter
+

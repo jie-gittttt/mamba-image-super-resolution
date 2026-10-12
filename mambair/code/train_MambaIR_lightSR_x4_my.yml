@@ -1,0 +1,94 @@
+# GENERATE TIME: Tue May 12 13:31:05 2026
+# CMD:
+# basicsr/train.py -opt options/train/mambair/train_MambaIR_lightSR_x4_my.yml
+
+# MambaIR 期中复现 — 训练配置（单卡 RTX 4090）
+name: MambaIR_lightSR_x4
+model_type: MambaIRModel
+scale: 4
+num_gpu: 1
+manual_seed: 10
+
+datasets:
+  train:
+    task: SR
+    name: DIV2K
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/DIV2K/DIV2K_train_HR
+    dataroot_lq: /root/autodl-tmp/datasets/DIV2K/DIV2K_train_LR_bicubic_X4
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+    gt_size: 128
+    use_hflip: false
+    use_rot: false
+    use_shuffle: true
+    num_worker_per_gpu: 12
+    batch_size_per_gpu: 96
+    dataset_enlarge_ratio: 100
+    prefetch_mode: ~
+
+  val:
+    name: DIV2K_val
+    type: PairedImageDataset
+    dataroot_gt: /root/autodl-tmp/datasets/DIV2K/DIV2K_valid_HR
+    dataroot_lq: /root/autodl-tmp/datasets/DIV2K/DIV2K_valid_LR_bicubic_X4
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+network_g:
+  type: MambaIR
+  upscale: 4
+  in_chans: 3
+  img_size: 64
+  img_range: 1.
+  d_state: 10
+  depths: [6, 6, 6, 6]
+  embed_dim: 60
+  mlp_ratio: 1.2
+  upsampler: 'pixelshuffledirect'
+  resi_connection: '1conv'
+
+path:
+  pretrain_network_g: ~
+  strict_load_g: false
+  resume_state: ~
+
+train:
+  optim_g:
+    type: Adam
+    lr: !!float 2e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  scheduler:
+    type: MultiStepLR
+    milestones: [12500, 20000, 22500, 23750]
+    gamma: 0.5
+  total_iter: 25000
+  warmup_iter: -1
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1.0
+    reduction: mean
+
+val:
+  val_freq: !!float 2.5e3
+  save_img: false
+  metrics:
+    psnr:
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: true
+
+logger:
+  print_freq: 200
+  save_checkpoint_freq: !!float 2.5e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+dist_params:
+  backend: nccl
+  port: 29500
